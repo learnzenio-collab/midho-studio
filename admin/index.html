@@ -5,38 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="theme-color" content="#0E43AB"/>
   <title>Midho Studio — Admin</title>
+  <link rel="icon" type="image/png" href="/assets/midho-logo-white.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/styles.css"/>
 </head>
 <body class="admin-body">
-  <main id="setupView" class="auth-screen" hidden>
-    <section class="auth-card">
-      <a class="brand auth-brand" href="/"><span class="brand-logo-box"><img class="brand-logo" src="/assets/midho-logo-white.png" alt="Midho Studio"></span></a>
-      <span class="auth-kicker">First setup</span>
-      <h1>Buat akun admin</h1>
-      <p>Akun ini dipakai untuk mengakses dashboard pada browser ini.</p>
-      <form id="setupForm" class="auth-form">
-        <label>Email admin<input type="email" name="email" required placeholder="admin@midhostudio.com"></label>
-        <label>Password<input type="password" name="password" required minlength="6" placeholder="Minimal 6 karakter"></label>
-        <label>Konfirmasi password<input type="password" name="password2" required minlength="6"></label>
-        <button class="btn btn-primary btn-block">Buat akun admin</button>
-      </form>
-      <small class="auth-note">Untuk penggunaan produksi lintas perangkat, autentikasi ini akan dipindahkan ke Supabase Auth saat akses project backend tersedia.</small>
-    </section>
-  </main>
-
-  <main id="loginView" class="auth-screen" hidden>
-    <section class="auth-card">
-      <a class="brand auth-brand" href="/"><span class="brand-logo-box"><img class="brand-logo" src="/assets/midho-logo-white.png" alt="Midho Studio"></span></a>
+  <main id="loginView" class="auth-screen">
+    <section class="auth-card pin-card">
+      <a class="brand auth-brand" href="/"><span class="brand-logo-box"><img class="brand-logo" data-brand-logo src="/assets/midho-logo-white.png" alt="Midho Studio"></span></a>
       <span class="auth-kicker">Admin access</span>
-      <h1>Masuk ke dashboard</h1>
-      <p>Kelola order, progres, portfolio, produk, harga, dan konten website.</p>
-      <form id="loginForm" class="auth-form">
-        <label>Email<input type="email" name="email" required></label>
-        <label>Password<input type="password" name="password" required></label>
-        <button class="btn btn-primary btn-block">Masuk</button>
+      <h1>Masukkan PIN Admin</h1>
+      <p>Tidak perlu username atau email. Akses dashboard cukup menggunakan PIN.</p>
+      <form id="pinForm" class="auth-form">
+        <label>PIN Admin<input type="password" inputmode="numeric" autocomplete="current-password" name="pin" required placeholder="•••••••••••"></label>
+        <button class="btn btn-primary btn-block">Masuk Dashboard</button>
       </form>
       <a class="auth-back" href="/">← Kembali ke website</a>
     </section>
@@ -44,33 +28,34 @@
 
   <div id="adminView" class="admin-shell" hidden>
     <aside class="sidebar">
-      <a class="brand admin-brand" href="/"><span class="brand-logo-box"><img class="brand-logo" src="/assets/midho-logo-white.png" alt="Midho Studio"></span></a>
+      <a class="brand admin-brand" href="/"><span class="brand-logo-box"><img class="brand-logo" data-brand-logo src="/assets/midho-logo-white.png" alt="Midho Studio"></span></a>
       <section class="side-section"><span class="side-label">Workspace</span><nav class="side-nav">
         <button class="side-item active" data-nav="overview"><span>⌂</span>Overview</button>
         <button class="side-item" data-nav="orders"><span>▦</span>Orders</button>
-        <button class="side-item" data-nav="services"><span>◇</span>Services</button>
+        <button class="side-item" data-nav="services"><span>◇</span>Layanan</button>
         <button class="side-item" data-nav="products"><span>◆</span>Produk</button>
         <button class="side-item" data-nav="pricing"><span>Rp</span>Pricing</button>
         <button class="side-item" data-nav="portfolio"><span>◫</span>Portfolio</button>
       </nav></section>
       <section class="side-section"><span class="side-label">Website</span><nav class="side-nav">
-        <button class="side-item" data-nav="content"><span>✎</span>Konten & Kontak</button>
-        <button class="side-item" data-nav="settings"><span>⚙</span>Settings</button>
+        <button class="side-item" data-nav="content"><span>✎</span>Konten Website</button>
+        <button class="side-item" data-nav="branding"><span>✦</span>Logo & Favicon</button>
       </nav></section>
       <div class="side-bottom"><button class="side-item" id="logoutBtn"><span>↪</span>Logout</button></div>
     </aside>
 
     <main class="admin-main">
       <header class="admin-topbar">
-        <div><button class="admin-menu">☰</button><span class="admin-path">Midho Studio / <strong>Admin</strong></span></div>
+        <div><button class="admin-menu">☰</button><span class="admin-path">Midho Studio / <strong id="adminCurrent">Overview</strong></span></div>
         <div><a class="preview-link" href="/" target="_blank">Preview website ↗</a></div>
       </header>
       <div class="admin-content" id="mainContent"></div>
     </main>
   </div>
+
   <div id="modalRoot"></div>
+  <div id="adminToast" class="admin-toast"></div>
   <script src="/assets/store.js"></script>
   <script src="/assets/admin-app.js"></script>
-  <script src="/assets/app.js"></script>
 </body>
 </html>
