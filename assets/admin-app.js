@@ -11,7 +11,7 @@ const reload=async()=>{state.data=await A.snapshot();syncBrand();render();};
 
 async function enter(){
   $("#loginView").hidden=true;$("#adminView").hidden=false;
-  try{await reload()}catch(e){A.logout();$("#adminView").hidden=true;$("#loginView").hidden=false;toast("Sesi berakhir, masukkan PIN lagi.","err")}
+  try{await reload()}catch(e){A.logout();$("#adminView").hidden=true;$("#loginView").hidden=false;}
 }
 $("#pinForm").addEventListener("submit",async e=>{
   e.preventDefault();const btn=e.submitter;btn.disabled=true;
