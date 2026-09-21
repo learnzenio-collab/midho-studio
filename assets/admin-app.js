@@ -19,6 +19,8 @@ $("#pinForm").addEventListener("submit",async e=>{
 });
 $("#logoutBtn").addEventListener("click",()=>{A.logout();$("#adminView").hidden=true;$("#loginView").hidden=false;});
 if(A.hasToken()) enter();
+const adminMenu=document.querySelector(".admin-menu"),sidebar=document.querySelector(".sidebar");
+if(adminMenu&&sidebar){adminMenu.addEventListener("click",()=>sidebar.classList.toggle("open"));document.addEventListener("click",e=>{if(window.innerWidth<=1000&&e.target.closest("[data-nav]"))sidebar.classList.remove("open")});}
 
 function navTitle(){return ({overview:"Overview",orders:"Orders",services:"Layanan",products:"Produk",pricing:"Harga",portfolio:"Portfolio",content:"Konten Website",branding:"Logo & Favicon"})[state.section]||"Settings"}
 function render(){
@@ -139,7 +141,7 @@ document.addEventListener("submit",async e=>{
     if(type==="services")row={...row,name:f.get("name"),description:f.get("description")||""};
     if(type==="products")row={...row,name:f.get("name"),category:f.get("category")||"",description:f.get("description")||"",price:Number(f.get("price")||0),lynk_url:f.get("lynk_url")||""};
     if(type==="pricing")row={...row,name:f.get("name"),label:f.get("label")||"",price_text:f.get("price_text")||"",description:f.get("description")||"",features:(f.get("features")||"").split("\n").map(x=>x.trim()).filter(Boolean)};
-    if(type==="portfolio"){const existing=state.data.portfolio.find(x=>x.id===id)||{};let image_path=existing.image_path||null;let image_url=existing.image_url||null;const file=f.get("image");if(file&&file.size){const up=await A.upload("portfolio",file);image_path=up.path;image_url=null}row={...row,title:f.get("name"),category:f.get("category"),category_label:f.get("category_label")||"",year:f.get("year")||"",description:f.get("description")||"",image_alt:f.get("image_alt")||"",image_path,image_url};}
+    if(type==="portfolio"){const existing=state.data.portfolio.find(x=>x.id===id)||{};let image_path=existing.image_path||null;let image_url=existing.image_url||null;const file=f.get("image");if(file&&file.size){const allowed=["image/jpeg","image/png","image/webp","image/gif"];if(!allowed.includes(file.type))throw new Error("Format gambar tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");if(file.size>15*1024*1024)throw new Error("Ukuran gambar maksimal 15 MB.");const submit=e.target.querySelector("button.btn-primary");if(submit){submit.disabled=true;submit.dataset.oldText=submit.textContent;submit.textContent="Mengunggah 0%"}try{const up=await A.upload("portfolio",file,p=>{if(submit)submit.textContent="Mengunggah "+p+"%"});image_path=up.path;image_url=null}finally{if(submit){submit.disabled=false;submit.textContent=submit.dataset.oldText||"Simpan"}}}row={...row,title:f.get("name"),category:f.get("category"),category_label:f.get("category_label")||"",year:f.get("year")||"",description:f.get("description")||"",image_alt:f.get("image_alt")||"",image_path,image_url};}
     if(!row.id)delete row.id;await A.upsert(type,row);$("#modalRoot").innerHTML="";await reload();toast("Konten tersimpan.");
   }catch(err){toast(err.message,"err")}return}
   if(e.target.id==="siteForm"){e.preventDefault();const f=new FormData(e.target),row={id:1};["hero_title","hero_description","about","whatsapp","lynk","instagram","email","location"].forEach(k=>row[k]=f.get(k)||"");try{await A.upsert("site_settings",row);await reload();toast("Konten website diperbarui.")}catch(err){toast(err.message,"err")}return}

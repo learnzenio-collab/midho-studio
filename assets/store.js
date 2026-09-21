@@ -33,9 +33,24 @@
   async function upsert(table,row){return adminCall({action:"upsert",table,row})}
   async function remove(table,id){return adminCall({action:"delete",table,id})}
   async function saveOrder(order){return adminCall({action:"save_order",order})}
-  async function upload(bucket,file){
-    const base64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(",")[1]);r.onerror=reject;r.readAsDataURL(file)});
-    return adminCall({action:"upload_asset",bucket,filename:file.name,contentType:file.type,base64});
+  async function upload(bucket,file,onProgress){
+    const signed=await adminCall({action:"create_upload",bucket,filename:file.name,contentType:file.type,size:file.size});
+    await new Promise((resolve,reject)=>{
+      const xhr=new XMLHttpRequest();
+      xhr.open("PUT",signed.signedUrl,true);
+      xhr.setRequestHeader("x-upsert","false");
+      xhr.upload.onprogress=e=>{if(e.lengthComputable&&typeof onProgress==="function")onProgress(Math.round(e.loaded/e.total*100))};
+      xhr.onerror=()=>reject(new Error("Upload gagal. Periksa koneksi lalu coba lagi."));
+      xhr.onload=()=>{
+        if(xhr.status>=200&&xhr.status<300)resolve();
+        else{let msg="Upload gagal";try{const j=JSON.parse(xhr.responseText);msg=j.message||j.error||msg}catch{}reject(new Error(msg+" ("+xhr.status+")"))}
+      };
+      const form=new FormData();
+      form.append("cacheControl","3600");
+      form.append("",file);
+      xhr.send(form);
+    });
+    return signed;
   }
   async function deleteAsset(bucket,path){return adminCall({action:"delete_asset",bucket,path})}
   function logout(){sessionStorage.removeItem(TOKEN_KEY)}
