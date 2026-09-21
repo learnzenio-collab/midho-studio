@@ -5,8 +5,9 @@ let state={data:null,section:"overview",status:"all",from:"",to:""};
 const esc=(v="")=>String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
 const toast=(m,type="ok")=>{const t=$("#adminToast");if(!t)return;t.textContent=m;t.className="admin-toast show "+type;setTimeout(()=>t.classList.remove("show"),2600)};
 const statusLabel=s=>s==="selesai"?"Selesai":s==="revisi"?"Revisi":"Berlangsung";
+function syncBrand(){const s=state.data?.site||{};const logo=s.logo_path?A.publicAsset("site-assets",s.logo_path):"/assets/midho-logo-white.png";$("[data-brand-logo]").forEach(img=>img.src=logo);const fav=s.favicon_path?A.publicAsset("site-assets",s.favicon_path):"/assets/midho-logo-white.png";let link=document.querySelector('link[rel="icon"]');if(!link){link=document.createElement("link");link.rel="icon";document.head.appendChild(link)}link.href=fav;}
 const orders=()=>state.data.orders.filter(o=>(state.status==="all"||o.status===state.status)&&(!state.from||o.order_date>=state.from)&&(!state.to||o.order_date<=state.to));
-const reload=async()=>{state.data=await A.snapshot();render();};
+const reload=async()=>{state.data=await A.snapshot();syncBrand();render();};
 
 async function enter(){
   $("#loginView").hidden=true;$("#adminView").hidden=false;
