@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="theme-color" content="#0E43AB"/>
+  <title>Midho Studio — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css"/>
+</head>
+<body class="admin-body">
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <a class="brand admin-brand" href="/">
+        <span class="brand-mark"><i class="dot"></i><i class="stem"></i><i class="slash"></i></span>
+        <span class="brand-word"><b>midho</b><small>studio</small></span>
+      </a>
+      <section class="side-section"><span class="side-label">Workspace</span><nav class="side-nav">
+        <button class="side-item active"><span>⌂</span>Overview</button>
+        <button class="side-item"><span>▦</span>Orders<b>8</b></button>
+        <button class="side-item"><span>✓</span>Progress</button>
+        <button class="side-item"><span>◫</span>Portfolio</button>
+        <button class="side-item"><span>◇</span>Services</button>
+        <button class="side-item"><span>Rp</span>Pricing</button>
+      </nav></section>
+      <section class="side-section"><span class="side-label">Website</span><nav class="side-nav">
+        <button class="side-item"><span>✎</span>Content</button>
+        <button class="side-item"><span>⚙</span>Settings</button>
+      </nav></section>
+      <div class="side-bottom"><div class="admin-profile"><div class="profile-avatar">MS</div><div><strong>Administrator</strong><small>Midho Studio</small></div><span>•••</span></div></div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div><button class="admin-menu">☰</button><span class="admin-path">Dashboard / <strong>Overview</strong></span></div>
+        <div><a class="preview-link" href="/">Preview website ↗</a><button class="icon-btn">⌕</button><button class="icon-btn">♢</button></div>
+      </header>
+
+      <div class="admin-content">
+        <div class="admin-heading">
+          <div><span class="hello">Good evening, Admin</span><h1>Business overview</h1><p>Pantau performa bisnis dan progress order dalam satu tempat.</p></div>
+          <div class="heading-actions"><button class="btn btn-outline compact">21 Sep 2026 ▾</button><button class="btn btn-primary compact">+ Tambah Order</button></div>
+        </div>
+
+        <div class="demo-note"><strong>Frontend preview.</strong> Data di bawah masih contoh. Login, database, statistik real, dan CRUD akan aktif setelah project Supabase target terhubung.</div>
+
+        <section class="stat-grid">
+          <article class="stat-card"><div class="stat-icon">Rp</div><div><span>Total Revenue</span><strong>Rp12,8 jt</strong><small class="positive">↑ 18.4% <em>dari bulan lalu</em></small></div></article>
+          <article class="stat-card"><div class="stat-icon">▣</div><div><span>Total Order</span><strong>48</strong><small class="positive">↑ 8 order <em>bulan ini</em></small></div></article>
+          <article class="stat-card"><div class="stat-icon">◌</div><div><span>Berlangsung</span><strong>8</strong><small><em>4 perlu update hari ini</em></small></div></article>
+          <article class="stat-card"><div class="stat-icon">✓</div><div><span>Selesai</span><strong>40</strong><small class="positive">83.3% <em>completion rate</em></small></div></article>
+        </section>
+
+        <section class="admin-grid">
+          <article class="panel">
+            <div class="panel-head"><div><span>Revenue analytics</span><h3>Penjualan 6 bulan terakhir</h3></div><button class="chip">6 Bulan ▾</button></div>
+            <div class="revenue-meta"><strong>Rp12.800.000</strong><span class="positive">+18.4%</span></div>
+            <div class="chart-wrap">
+              <div class="y-labels"><span>4jt</span><span>3jt</span><span>2jt</span><span>1jt</span><span>0</span></div>
+              <svg class="line-chart" viewBox="0 0 640 220" preserveAspectRatio="none">
+                <defs><linearGradient id="fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#0E43AB" stop-opacity=".20"/><stop offset="100%" stop-color="#0E43AB" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0 174C60 155 85 160 128 132C180 98 205 126 258 106C308 88 340 102 390 70C445 35 470 66 520 48C570 30 602 18 640 24V220H0Z" fill="url(#fill)"/>
+                <path d="M0 174C60 155 85 160 128 132C180 98 205 126 258 106C308 88 340 102 390 70C445 35 470 66 520 48C570 30 602 18 640 24" fill="none" stroke="#0E43AB" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+              <div class="x-labels"><span>Apr</span><span>Mei</span><span>Jun</span><span>Jul</span><span>Ags</span><span>Sep</span></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head"><div><span>Order status</span><h3>Progress project</h3></div><button class="icon-btn">•••</button></div>
+            <div class="donut-row">
+              <div class="donut"><div><strong>48</strong><span>Orders</span></div></div>
+              <div class="legend"><div><i></i><span>Selesai</span><strong>40</strong></div><div><i></i><span>Berlangsung</span><strong>6</strong></div><div><i></i><span>Revisi</span><strong>2</strong></div></div>
+            </div>
+            <div class="mini-insight"><span>✦</span><p><strong>83% completion rate</strong><br>Performa penyelesaian project tetap stabil.</p></div>
+          </article>
+        </section>
+
+        <section class="panel order-panel">
+          <div class="panel-head order-head">
+            <div><span>Recent orders</span><h3>Order terbaru</h3></div>
+            <div class="order-actions"><button class="chip">Semua status ▾</button><button class="chip">Filter tanggal</button><button class="text-button">Lihat semua →</button></div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>PROJECT</th><th>CLIENT</th><th>LAYANAN</th><th>DEADLINE</th><th>PROGRESS</th><th>STATUS</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><strong>Brand Identity — Aster</strong><small>#MS-240921</small></td><td>Aster Coffee</td><td>Branding</td><td>28 Sep 2026</td><td><div class="progress-cell"><div class="progress-bar"><i style="width:72%"></i></div><span>72%</span></div></td><td><span class="status in-progress">Berlangsung</span></td><td>•••</td></tr>
+              <tr><td><strong>Landing Page — Nusa</strong><small>#MS-200921</small></td><td>Nusa Kreatif</td><td>Website</td><td>25 Sep 2026</td><td><div class="progress-cell"><div class="progress-bar"><i style="width:90%"></i></div><span>90%</span></div></td><td><span class="status revision">Revisi</span></td><td>•••</td></tr>
+              <tr><td><strong>Campaign Kit — Luma</strong><small>#MS-180921</small></td><td>Luma Skin</td><td>Graphic Design</td><td>22 Sep 2026</td><td><div class="progress-cell"><div class="progress-bar"><i style="width:100%"></i></div><span>100%</span></div></td><td><span class="status done">Selesai</span></td><td>•••</td></tr>
+              <tr><td><strong>Packaging — Sora</strong><small>#MS-160921</small></td><td>Sora Goods</td><td>Packaging</td><td>30 Sep 2026</td><td><div class="progress-cell"><div class="progress-bar"><i style="width:46%"></i></div><span>46%</span></div></td><td><span class="status in-progress">Berlangsung</span></td><td>•••</td></tr>
+            </tbody>
+          </table></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="/assets/app.js"></script>
+</body>
+</html>
