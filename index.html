@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css" />
+  <link rel="stylesheet" href="/assets/styles.css" />\n  <link rel="stylesheet" href="/assets/polish.css" />
 </head>
 <body>
   <header class="topbar">
@@ -25,8 +25,10 @@
         <a href="#produk">Produk</a>
         <a href="#harga">Harga</a>
         <a href="#tentang">Tentang</a>
+        <a class="nav-mobile-buy" href="#" data-lynk>Pesan / Beli Sekarang <span>↗</span></a>
+        <a class="nav-mobile-consult" href="#" data-whatsapp>Konsultasi WhatsApp</a>
       </nav>
-      <a class="btn btn-primary navcta" href="#" data-whatsapp>Konsultasi Gratis <span>↗</span></a>
+      <a class="btn btn-primary navcta" href="#" data-lynk>Pesan / Beli Sekarang <span>↗</span></a>
     </div>
   </header>
 
@@ -37,9 +39,11 @@
         <h1>Visual yang kuat.<br><span>Bisnis yang lebih hidup.</span></h1>
         <p>Midho Studio membantu brand tampil lebih profesional melalui desain, identitas visual, website, dan kebutuhan digital yang dikerjakan dengan detail.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary btn-lg" href="#layanan">Lihat Layanan <span>↘</span></a>
-          <a class="btn btn-outline btn-lg" href="#portfolio">Explore Portfolio</a>
+          <a class="btn btn-primary btn-lg hero-buy" href="#" data-lynk>Pesan Layanan <span>↗</span></a>
+          <a class="btn btn-outline btn-lg" href="#portfolio">Lihat Portfolio</a>
         </div>
+        <div class="hero-help"><span>Belum yakin pilih layanan?</span> <a href="#" data-whatsapp>Konsultasi dulu via WhatsApp ↗</a></div>
+        <div class="hero-benefits" aria-label="Keunggulan Midho Studio"><span>Desain custom</span><span>Revisi terarah</span><span>File siap pakai</span><span>Support setelah delivery</span></div>
         <div class="hero-note">
           <div class="avatars"><span>MS</span><span>UI</span><span>BR</span></div>
           <div><b>Built with clarity.</b><small>Desain rapi, terukur, dan siap dipakai.</small></div>
@@ -182,9 +186,9 @@
           <p>Harga final mengikuti kompleksitas brief. Paket berikut menjadi titik awal agar kebutuhan lebih mudah diperkirakan.</p>
         </div>
         <div class="price-grid">
-          <article class="price-card reveal"><span class="price-label">Starter</span><h3>Design Essentials</h3><p>Cocok untuk kebutuhan visual rutin dan materi promosi.</p><div class="price">Mulai<strong>Rp150K</strong></div><ul><li>1 kebutuhan desain</li><li>2x revisi minor</li><li>File final siap pakai</li><li>Support setelah delivery</li></ul><a class="btn btn-outline btn-block" href="#" data-whatsapp>Diskusikan kebutuhan</a></article>
-          <article class="price-card popular reveal"><span class="popular-badge">Paling fleksibel</span><span class="price-label">Growth</span><h3>Brand & Campaign</h3><p>Untuk brand yang ingin membangun visual lebih konsisten.</p><div class="price">Mulai<strong>Rp350K</strong></div><ul><li>Konsep visual terarah</li><li>Multi-asset design</li><li>3x revisi minor</li><li>Priority support</li></ul><a class="btn btn-primary btn-block" href="#" data-whatsapp>Pilih paket ini</a></article>
-          <article class="price-card reveal"><span class="price-label">Custom</span><h3>Website & Project</h3><p>Untuk kebutuhan digital yang lebih lengkap dan spesifik.</p><div class="price">Harga<strong>Custom</strong></div><ul><li>Scope sesuai project</li><li>UI/UX & development</li><li>Progress terpantau</li><li>Support setelah launch</li></ul><a class="btn btn-outline btn-block" href="#" data-whatsapp>Minta estimasi</a></article>
+          <article class="price-card reveal"><span class="price-label">Starter</span><h3>Design Essentials</h3><p>Cocok untuk kebutuhan visual rutin dan materi promosi.</p><div class="price">Mulai<strong>Rp150K</strong></div><ul><li>1 kebutuhan desain</li><li>2x revisi minor</li><li>File final siap pakai</li><li>Support setelah delivery</li></ul><a class="btn btn-outline btn-block" href="#" data-lynk>Pilih & Pesan ↗</a></article>
+          <article class="price-card popular reveal"><span class="popular-badge">Paling fleksibel</span><span class="price-label">Growth</span><h3>Brand & Campaign</h3><p>Untuk brand yang ingin membangun visual lebih konsisten.</p><div class="price">Mulai<strong>Rp350K</strong></div><ul><li>Konsep visual terarah</li><li>Multi-asset design</li><li>3x revisi minor</li><li>Priority support</li></ul><a class="btn btn-primary btn-block" href="#" data-lynk>Pilih & Pesan ↗</a></article>
+          <article class="price-card reveal"><span class="price-label">Custom</span><h3>Website & Project</h3><p>Untuk kebutuhan digital yang lebih lengkap dan spesifik.</p><div class="price">Harga<strong>Custom</strong></div><ul><li>Scope sesuai project</li><li>UI/UX & development</li><li>Progress terpantau</li><li>Support setelah launch</li></ul><a class="btn btn-outline btn-block" href="#" data-lynk>Lihat & Pesan ↗</a></article>
         </div>
       </div>
     </section>
@@ -204,7 +208,7 @@
     <section class="cta-wrap container reveal">
       <div class="cta">
         <div><span class="eyebrow">Punya project?</span><h2>Mari buat sesuatu<br>yang layak diingat.</h2></div>
-        <div class="cta-side"><p>Ceritakan kebutuhanmu. Kami bantu menyusun arah visual dan solusi yang paling masuk akal.</p><div><a class="btn btn-white btn-lg" href="#" data-whatsapp>Chat via WhatsApp <span>↗</span></a><a class="btn btn-soft btn-lg" href="#" data-lynk>Lihat semua layanan</a></div></div>
+        <div class="cta-side"><p>Sudah siap mulai? Pilih layanan dan lakukan pemesanan melalui halaman resmi Midho Studio. WhatsApp tersedia khusus untuk konsultasi.</p><div><a class="btn btn-white btn-lg" href="#" data-lynk>Lihat Layanan & Pesan <span>↗</span></a><a class="btn btn-soft btn-lg" href="#" data-whatsapp>Konsultasi WhatsApp</a></div></div>
       </div>
     </section>
   </main>
@@ -220,7 +224,7 @@
       <div><span>Admin</span><a href="/admin/">Dashboard</a><small>© <span id="year"></span> Midho Studio</small></div>
     </div>
   </footer>
-  <a class="floating-wa" href="#" data-whatsapp aria-label="Chat WhatsApp"><span>WA</span><b>Chat WhatsApp</b></a>
+  <a class="floating-wa" href="#" data-whatsapp aria-label="Konsultasi WhatsApp"><span>WA</span><b>Konsultasi WhatsApp</b></a>
   <div class="toast" id="toast"></div>
   <script src="/assets/store.js"></script>
   <script src="/assets/app.js"></script>
