@@ -11,7 +11,7 @@ const reload=async()=>{state.data=await A.snapshot();syncBrand();render();};
 
 async function enter(){
   $("#loginView").hidden=true;$("#adminView").hidden=false;
-  try{await reload()}catch(e){A.logout();$("#adminView").hidden=true;$("#loginView").hidden=false;}
+  try{await reload()}catch(e){console.error("Admin load failed",e);A.logout();$("#adminView").hidden=true;$("#loginView").hidden=false;toast("Dashboard gagal dimuat: "+(e?.message||"unknown error"),"err");}
 }
 $("#pinForm").addEventListener("submit",async e=>{
   e.preventDefault();const btn=e.submitter;btn.disabled=true;
