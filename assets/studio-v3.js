@@ -12,9 +12,9 @@ function bindWA(site){
 function priceMessage(site,p){return waUrl(site.whatsapp||"6283133610239","Halo Midho Studio, saya tertarik "+(p.label||p.name)+" — "+(p.price_text||"")+". Saya ingin konsultasi dan pesan paket ini.")}
 function renderServices(data,site){
   const box=$("#serviceGrid"); if(!box)return;
-  const list=(data||[]).slice(0,4);
-  const marks=["Aa","▤","</>","◫"];
-  box.innerHTML=list.map((x,i)=>'<article class="service-card"><span class="num">0'+(i+1)+'</span><div class="service-mark">'+marks[i%marks.length]+'</div><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||"")+'</p><a href="'+esc(site.lynk||"https://lynk.id/midhostudio")+'" target="_blank" rel="noopener">Lihat & pesan ↗</a></article>').join("")||'<p class="empty">Layanan akan segera tersedia.</p>';
+  const list=(data||[]).slice(0,1);
+  box.classList.toggle("single-service",list.length===1);
+  box.innerHTML=list.map((x,i)=>'<article class="service-card"><span class="num">01</span><div class="service-mark">Feed</div><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||"")+'</p><a href="#harga">Lihat paket harga ↓</a></article>').join("")||'<p class="empty">Layanan belum tersedia.</p>';
 }
 function renderPortfolio(data){
   const box=$("#portfolioGrid");if(!box)return;
@@ -28,8 +28,19 @@ function renderProducts(data,site){
   const box=$("#productGrid"),section=$("#produk"),navLink=document.querySelector('a[href="#produk"]');if(!box||!section)return;
   const buy=site.lynk||"https://lynk.id/midhostudio";
   const list=(data||[]).filter(x=>x.featured);
-  if(!list.length){section.hidden=true;if(navLink)navLink.hidden=true;return}
+  const priceNav=document.querySelector('a[href="#harga"] span');
+  const aboutNav=document.querySelector('a[href="#tentang"] span');
+  const priceLabel=document.querySelector('#harga .section-title>div>span');
+  const aboutLabel=document.querySelector('#tentang .section-title>div>span');
+  if(!list.length){
+    section.hidden=true;if(navLink)navLink.hidden=true;
+    if(priceNav)priceNav.textContent="03";if(aboutNav)aboutNav.textContent="04";
+    if(priceLabel)priceLabel.textContent="03 / HARGA";if(aboutLabel)aboutLabel.textContent="04 / TENTANG";
+    return;
+  }
   section.hidden=false;if(navLink)navLink.hidden=false;
+  if(priceNav)priceNav.textContent="04";if(aboutNav)aboutNav.textContent="05";
+  if(priceLabel)priceLabel.textContent="04 / HARGA";if(aboutLabel)aboutLabel.textContent="05 / TENTANG";
   box.innerHTML=list.map(x=>'<article class="product-card"><span class="product-type">'+esc(x.category||"Produk")+'</span><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||"")+'</p><footer><strong>'+(Number(x.price)>0?A.money(x.price):"Custom")+'</strong><a href="'+esc(x.lynk_url||buy)+'" target="_blank" rel="noopener">Beli / Detail ↗</a></footer></article>').join("");
 }
 function renderPricing(data,site){
@@ -38,7 +49,7 @@ function renderPricing(data,site){
   box.innerHTML=list.map((p,i)=>'<article class="price-card '+(p.featured?"featured":"")+'"><span class="price-label">'+esc(p.label||"Paket")+'</span><h3>'+esc(p.name)+'</h3><div class="price">'+esc(p.price_text)+'</div><ul>'+((p.features||[]).map(f=>'<li>'+esc(f)+'</li>').join(""))+'</ul><a href="'+priceMessage(site,p)+'" target="_blank" rel="noopener">Pilih paket via WhatsApp ↗</a></article>').join("");
 }
 function setContact(site){
-  $("#aboutText").textContent=site.about||"Creative digital studio untuk desain yang lebih jelas, modern, dan bernilai.";
+  $("#aboutText").textContent=site.about||"Midho Studio menyediakan jasa desain feed sosial media yang rapi, konsisten, dan siap upload.";
   const e=$("#publicEmail");e.textContent=site.email||"—";e.href=site.email?"mailto:"+site.email:"#";
   const ig=$("#publicInstagram");ig.textContent=site.instagram||"—";ig.href=site.instagram||"#";
   $("#publicLocation").textContent=site.location||"—";
