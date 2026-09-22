@@ -3,7 +3,7 @@ const A=window.MidhoAPI;
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const state={data:null,section:"overview",query:"",status:"all",payment:"all"};
-function toast(msg,type="ok"){const t=$("#adminToast");if(!t)return;t.textContent=msg;t.className="admin-toast show"+(type==="err"?" err":"");clearTimeout(t._x);t._x=setTimeout(()=>t.className="admin-toast",2600)}
+function toast(msg,type="ok"){const t=$("#adminToast");if(!t)return;t.textContent=msg;t.className="admin-toast show"+(type==="err"?" err":"");clearTimeout(t._x);t._x=setTimeout(()=>t.className="admin-toast",3000)}
 function initials(name){return String(name||"?").split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()}
 function statusLabel(s){return ({brief:"Brief",dikerjakan:"Dikerjakan",review:"Review",revisi:"Revisi",selesai:"Selesai",berlangsung:"Dikerjakan"})[s]||s||"—"}
 function paymentLabel(s){return ({belum_bayar:"Belum Bayar",dp:"DP",lunas:"Lunas"})[s]||s||"—"}
@@ -15,8 +15,12 @@ function activitiesFor(id){return (state.data?.activities||[]).filter(a=>a.order
 function portfolioUrl(x){return x.image_path?A.publicAsset("portfolio",x.image_path):(x.image_url||"")}
 function logoUrl(site){return site?.logo_path?A.publicAsset("site-assets",site.logo_path):"/assets/midho-logo-white.png"}
 function pageHead(kicker,title,desc,action){return '<div class="page-head"><div><small>'+esc(kicker)+'</small><h1>'+esc(title)+'</h1>'+(desc?'<p>'+esc(desc)+'</p>':'')+'</div>'+(action||"")+'</div>'}
-function modal(title,body,wide=false){$("#modalRoot").innerHTML='<div class="modal-backdrop" data-close-modal><section class="modal-card '+(wide?"wide":"")+'" onclick="event.stopPropagation()"><header class="modal-head"><h2>'+esc(title)+'</h2><button type="button" data-close-modal>×</button></header>'+body+'</section></div>'}
-function closeModal(){$("#modalRoot").innerHTML=""}
+function modal(title,body,wide=false){
+  $("#modalRoot").innerHTML='<div class="modal-backdrop" data-modal-backdrop><section class="modal-card '+(wide?"wide":"")+'" data-modal-card><header class="modal-head"><h2>'+esc(title)+'</h2><button type="button" data-close-modal aria-label="Tutup">×</button></header>'+body+'</section></div>';
+  const first=$("#modalRoot input:not([type=hidden]), #modalRoot select, #modalRoot textarea");
+  setTimeout(()=>first?.focus(),20);
+}
+function closeModal(){const root=$("#modalRoot");if(root)root.innerHTML=""}
 async function reload(){state.data=await A.snapshot();$$("[data-brand-logo]").forEach(x=>x.src=logoUrl(state.data.site||{}));return state.data}
 async function enter(){await reload();$("#loginView").hidden=true;$("#adminView").hidden=false;window.MidhoAdminPages.render()}
 window.MidhoAdmin={A,$,$$,esc,state,toast,initials,statusLabel,paymentLabel,fmtDate,fmtDateTime,deadlineInfo,clientOf,activitiesFor,portfolioUrl,logoUrl,pageHead,modal,closeModal,reload,enter};

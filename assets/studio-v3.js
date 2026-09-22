@@ -25,10 +25,12 @@ function renderPortfolio(data){
   if(second&&$("#heroWork2"))$("#heroWork2").src=pimg(second);
 }
 function renderProducts(data,site){
-  const box=$("#productGrid");if(!box)return;
+  const box=$("#productGrid"),section=$("#produk"),navLink=document.querySelector('a[href="#produk"]');if(!box||!section)return;
   const buy=site.lynk||"https://lynk.id/midhostudio";
   const list=(data||[]).filter(x=>x.featured);
-  box.innerHTML=list.map(x=>'<article class="product-card"><span class="product-type">'+esc(x.category||"Produk")+'</span><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||"")+'</p><footer><strong>'+(Number(x.price)>0?A.money(x.price):"Custom")+'</strong><a href="'+esc(x.lynk_url||buy)+'" target="_blank" rel="noopener">Beli / Detail ↗</a></footer></article>').join("")||'<article class="product-card"><span class="product-type">Midho Studio</span><h3>Lihat semua layanan</h3><p>Pilih layanan yang sesuai kebutuhanmu.</p><footer><strong>Mulai sekarang</strong><a href="'+esc(buy)+'" target="_blank" rel="noopener">Buka Lynk.id ↗</a></footer></article>';
+  if(!list.length){section.hidden=true;if(navLink)navLink.hidden=true;return}
+  section.hidden=false;if(navLink)navLink.hidden=false;
+  box.innerHTML=list.map(x=>'<article class="product-card"><span class="product-type">'+esc(x.category||"Produk")+'</span><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||"")+'</p><footer><strong>'+(Number(x.price)>0?A.money(x.price):"Custom")+'</strong><a href="'+esc(x.lynk_url||buy)+'" target="_blank" rel="noopener">Beli / Detail ↗</a></footer></article>').join("");
 }
 function renderPricing(data,site){
   const box=$("#priceGrid");if(!box)return;

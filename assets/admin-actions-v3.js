@@ -1,10 +1,9 @@
 (()=>{
 const M=window.MidhoAdmin,{A,$,$$,esc,state,toast,fmtDateTime,activitiesFor,clientOf,modal,closeModal,reload,enter}=M;
 const P=window.MidhoAdminPages;
-function val(v){return v==null?"":String(v)}
 function orderCode(){const d=new Date(),s=d.toISOString().slice(0,10).replace(/-/g,""),r=Math.random().toString(36).slice(2,6).toUpperCase();return "MDH-"+s+"-"+r}
 function field(label,input,full=false){return '<div class="field '+(full?"full":"")+'"><label>'+esc(label)+'</label>'+input+'</div>'}
-function modalForm(title,id,body,wide=false){modal(title,'<form id="'+id+'"><div class="modal-body">'+body+'</div><footer class="modal-foot"><button type="button" class="btn btn-outline" data-close-modal>Batal</button><button class="btn btn-primary">Simpan</button></footer></form>',wide)}
+function modalForm(title,id,body,wide=false){modal(title,'<form id="'+id+'"><div class="modal-body">'+body+'</div><footer class="modal-foot"><button type="button" class="btn btn-outline" data-close-modal>Batal</button><button type="submit" class="btn btn-primary">Simpan</button></footer></form>',wide)}
 function clientModal(c={}){
   modalForm(c.id?"Edit Klien":"Tambah Klien","clientForm",
     '<input type="hidden" name="id" value="'+esc(c.id||"")+'">'+
@@ -14,7 +13,7 @@ function clientModal(c={}){
     field("WhatsApp",'<input name="whatsapp" inputmode="tel" value="'+esc(c.whatsapp||"")+'" placeholder="628...">')+
     field("Email",'<input name="email" type="email" value="'+esc(c.email||"")+'">')+
     field("Status",'<select name="status"><option value="aktif" '+(c.status!=="arsip"?"selected":"")+'>Aktif</option><option value="arsip" '+(c.status==="arsip"?"selected":"")+'>Arsip</option></select>')+
-    field("Catatan internal",'<textarea name="notes" placeholder="Preferensi klien, warna, kebiasaan revisi, dll.">'+esc(c.notes||"")+'</textarea>',true)+
+    field("Catatan internal",'<textarea name="notes" placeholder="Preferensi desain, warna, catatan revisi, dll.">'+esc(c.notes||"")+'</textarea>',true)+
     '</div>'
   );
 }
@@ -50,17 +49,14 @@ function projectModal(o={}){
   modalForm(o.id?"Detail Project":"Project Baru","projectForm",body,true);
 }
 function portfolioModal(x={}){
+  const current=x.id&&M.portfolioUrl(x)?'<div class="portfolio-current"><img src="'+esc(M.portfolioUrl(x))+'" alt="'+esc(x.title||"Portfolio")+'"><small>Gambar saat ini</small></div>':'';
   modalForm(x.id?"Edit Portfolio":"Tambah Portfolio","portfolioForm",
     '<input type="hidden" name="id" value="'+esc(x.id||"")+'">'+
-    '<div class="form-grid">'+
-    field("Judul",'<input name="title" required value="'+esc(x.title||"")+'">')+
-    field("Kategori",'<select name="category"><option value="digital" '+(x.category==="digital"?"selected":"")+'>Digital</option><option value="brand" '+(x.category==="brand"?"selected":"")+'>Branding</option><option value="print" '+(x.category==="print"?"selected":"")+'>Print</option></select>')+
-    field("Label kategori",'<input name="category_label" value="'+esc(x.category_label||"Event & Campaign Design")+'">')+
-    field("Tahun",'<input name="year" value="'+esc(x.year||new Date().getFullYear())+'">')+
-    field("Deskripsi",'<textarea name="description">'+esc(x.description||"")+'</textarea>',true)+
-    field("Alt image",'<input name="image_alt" value="'+esc(x.image_alt||x.title||"")+'">',true)+
-    field("Urutan",'<input name="sort_order" type="number" value="'+esc(x.sort_order??((state.data.portfolio||[]).length+1))+'">')+
-    field("Gambar portfolio",'<input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><span class="upload-note">File asli langsung ke Supabase Storage · maksimal 15 MB.</span>',true)+
+    '<div class="form-grid compact-form">'+
+      field("Judul",'<input name="title" required value="'+esc(x.title||"")+'" placeholder="Nama karya">',true)+
+      field("Kategori",'<select name="category"><option value="digital" '+(x.category==="digital"||!x.category?"selected":"")+'>Digital</option><option value="brand" '+(x.category==="brand"?"selected":"")+'>Branding</option><option value="print" '+(x.category==="print"?"selected":"")+'>Print</option></select>')+
+      field("Gambar portfolio",'<input name="image" type="file" '+(!x.id?"required":"")+' accept="image/jpeg,image/png,image/webp,image/gif"><span class="upload-note">JPG / PNG / WebP / GIF · maksimal 15 MB. File disimpan langsung ke Supabase Storage.</span>',true)+
+      current+
     '</div>'
   );
 }
@@ -71,9 +67,8 @@ function productModal(x={}){
     field("Kategori",'<input name="category" value="'+esc(x.category||"")+'">')+
     field("Harga",'<input name="price" type="number" min="0" value="'+esc(x.price||0)+'">')+
     field("Link Lynk.id",'<input name="lynk_url" value="'+esc(x.lynk_url||state.data.site?.lynk||"https://lynk.id/midhostudio")+'">')+
-    field("Deskripsi",'<textarea name="description">'+esc(x.description||"")+'</textarea>',true)+
-    field("Urutan",'<input name="sort_order" type="number" value="'+esc(x.sort_order??((state.data.products||[]).length+1))+'">')+
-    '<div class="field"><label><input type="checkbox" name="featured" '+(x.featured!==false?"checked":"")+'> Tampilkan sebagai produk unggulan</label></div>'+
+    field("Deskripsi singkat",'<textarea name="description">'+esc(x.description||"")+'</textarea>',true)+
+    '<div class="field"><label><input type="checkbox" name="featured" '+(x.featured!==false?"checked":"")+'> Tampilkan di website</label></div>'+
     '</div>'
   );
 }
@@ -95,7 +90,14 @@ function waProject(id){
   const msg="Halo "+c.name+", update project *"+o.project+"* dari Midho Studio:\n\nStatus: "+status+"\nProgress: "+pct+"%"+(o.deadline?"\nDeadline: "+M.fmtDate(o.deadline):"")+"\n\nJika ada feedback, silakan kabari di sini ya.";
   window.open("https://wa.me/"+String(c.whatsapp).replace(/\D/g,"")+"?text="+encodeURIComponent(msg),"_blank","noopener");
 }
-async function afterSave(msg){await reload();P.render();closeModal();toast(msg)}
+async function afterSave(msg){
+  try{await reload();P.render();closeModal();toast(msg)}
+  catch(err){
+    if(err.status===401){A.logout();$("#adminView").hidden=true;$("#loginView").hidden=false;toast("Sesi admin berakhir. Masukkan PIN lagi.","err")}
+    else toast("Data tersimpan, tetapi daftar belum termuat ulang. Coba buka menu ini lagi.","err");
+    throw err;
+  }
+}
 function applyClientFilters(){
   const q=($("#clientSearch")?.value||"").toLowerCase(),st=$("#clientStatus")?.value||"all";
   $$(".data-table tbody tr").forEach(tr=>{if(tr.querySelector(".empty"))return;const okQ=!q||tr.innerText.toLowerCase().includes(q),okS=st==="all"||tr.innerText.toLowerCase().includes(st);tr.style.display=okQ&&okS?"":"none"});
@@ -105,7 +107,9 @@ function applyProjectFilters(){
   $$(".data-table tbody tr").forEach(tr=>{if(tr.querySelector(".empty"))return;const okQ=!q||tr.innerText.toLowerCase().includes(q),s=tr.querySelector(".status-pill"),p=tr.querySelector(".pay-pill"),okS=st==="all"||s?.classList.contains(st),okP=pay==="all"||p?.classList.contains(pay);tr.style.display=okQ&&okS&&okP?"":"none"});
 }
 document.addEventListener("click",async e=>{
-  if(e.target.closest("[data-close-modal]")){closeModal();return}
+  const closeButton=e.target.closest("[data-close-modal]");
+  if(closeButton){e.preventDefault();closeModal();return}
+  if(e.target.matches("[data-modal-backdrop]")){closeModal();return}
   const n=e.target.closest("[data-nav]");if(n){state.section=n.dataset.nav;state.query="";P.render();$("#adminRail").classList.remove("open");return}
   const act=e.target.closest("[data-action]")?.dataset.action;
   if(act==="new-client")return clientModal();
@@ -121,27 +125,62 @@ document.addEventListener("click",async e=>{
   const deletes=[
     ["[data-delete-client]","clients","deleteClient","Hapus klien ini? Project lama tetap tersimpan."],
     ["[data-delete-project]","orders","deleteProject","Hapus project dan seluruh progress/riwayatnya?"],
-    ["[data-delete-portfolio]","portfolio","deletePortfolio","Hapus portfolio ini? File Storage juga akan dihapus jika berasal dari upload admin."],
+    ["[data-delete-portfolio]","portfolio","deletePortfolio","Hapus portfolio ini? File upload di Storage juga ikut dihapus."],
     ["[data-delete-product]","products","deleteProduct","Hapus produk ini?"]
   ];
-  for(const [sel,table,key,msg] of deletes){const el=e.target.closest(sel);if(el){if(confirm(msg)){try{await A.remove(table,el.dataset[key]);await afterSave("Data dihapus.")}catch(err){toast(err.message,"err")}}return}}
+  for(const [sel,table,key,msg] of deletes){const el=e.target.closest(sel);if(el){if(confirm(msg)){try{await A.remove(table,el.dataset[key]);await afterSave("Data dihapus.")}catch(err){if(err.status!==401)toast(err.message,"err")}}return}}
 });
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#modalRoot")?.children.length)closeModal()});
 document.addEventListener("input",e=>{if(e.target.id==="clientSearch")applyClientFilters();if(e.target.id==="projectSearch")applyProjectFilters()});
-document.addEventListener("change",e=>{if(["clientStatus"].includes(e.target.id))applyClientFilters();if(["projectStatus","paymentFilter"].includes(e.target.id))applyProjectFilters()});
+document.addEventListener("change",e=>{if(e.target.id==="clientStatus")applyClientFilters();if(["projectStatus","paymentFilter"].includes(e.target.id))applyProjectFilters()});
 document.addEventListener("submit",async e=>{
   if(e.target.id==="pinForm"){e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;try{await A.login(new FormData(e.target).get("pin"));await enter()}catch(err){toast(err.message||"PIN salah","err")}finally{b.disabled=false}return}
-  if(e.target.id==="clientForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),row={name:f.get("name"),brand:f.get("brand")||"",whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),email:f.get("email")||"",status:f.get("status"),notes:f.get("notes")||"",updated_at:new Date().toISOString()};if(id)row.id=id;try{await A.upsert("clients",row);await afterSave("Klien tersimpan.")}catch(err){toast(err.message,"err")}return}
-  if(e.target.id==="projectForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),client=(state.data.clients||[]).find(c=>c.id===f.get("client_id"));if(!client)return toast("Pilih klien.","err");const progress=[];for(let i=0;i<12;i++){const label=f.get("progress_label_"+i);if(label)progress.push({label,done:f.get("progress_done_"+i)==="on"})}const row={id:id||undefined,order_code:f.get("order_code"),client_id:client.id,client:client.name,project:f.get("project"),service:f.get("service")||"",priority:f.get("priority"),order_date:f.get("order_date"),deadline:f.get("deadline")||null,status:f.get("status"),payment_status:f.get("payment_status"),amount:Number(f.get("amount")||0),paid_amount:Number(f.get("paid_amount")||0),revision_used:Number(f.get("revision_used")||0),revision_limit:Number(f.get("revision_limit")||0),brief_link:f.get("brief_link")||"",final_link:f.get("final_link")||"",notes:f.get("notes")||"",progress};try{await A.saveOrder(row);await afterSave("Project tersimpan.")}catch(err){toast(err.message,"err")}return}
-  if(e.target.id==="portfolioForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),old=(state.data.portfolio||[]).find(x=>x.id===id)||{};let image_path=old.image_path||null,image_url=old.image_url||null;const file=f.get("image"),btn=e.target.querySelector(".btn-primary");try{if(file&&file.size){if(file.size>15*1024*1024)throw new Error("Ukuran gambar maksimal 15 MB.");btn.disabled=true;btn.textContent="Mengunggah 0%";const up=await A.upload("portfolio",file,p=>btn.textContent="Mengunggah "+p+"%");image_path=up.path;image_url=null}const row={title:f.get("title"),category:f.get("category"),category_label:f.get("category_label")||"",year:f.get("year")||"",description:f.get("description")||"",image_alt:f.get("image_alt")||"",featured:true,sort_order:Number(f.get("sort_order")||0),image_path,image_url};if(id)row.id=id;await A.upsert("portfolio",row);await afterSave("Portfolio tersimpan.")}catch(err){toast(err.message,"err")}finally{btn.disabled=false;btn.textContent="Simpan"}return}
-  if(e.target.id==="productForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),row={name:f.get("name"),category:f.get("category")||"",price:Number(f.get("price")||0),lynk_url:f.get("lynk_url")||"",description:f.get("description")||"",featured:f.get("featured")==="on",sort_order:Number(f.get("sort_order")||0)};if(id)row.id=id;try{await A.upsert("products",row);await afterSave("Produk tersimpan.")}catch(err){toast(err.message,"err")}return}
-  if(e.target.id==="priceForm"){e.preventDefault();const f=new FormData(e.target),row={id:f.get("id"),label:f.get("label")||"",name:f.get("name"),price_text:f.get("price_text")||"",featured:f.get("featured")==="on",features:String(f.get("features")||"").split("\n").map(x=>x.trim()).filter(Boolean)};try{await A.upsert("pricing",row);await afterSave("Paket harga diperbarui.")}catch(err){toast(err.message,"err")}return}
-  if(e.target.id==="siteSettingsForm"){e.preventDefault();const f=new FormData(e.target),row={id:1,whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),lynk:f.get("lynk")||"https://lynk.id/midhostudio",email:f.get("email")||"",instagram:f.get("instagram")||"",location:f.get("location")||"",about:f.get("about")||""};try{await A.upsert("site_settings",row);await afterSave("Pengaturan website diperbarui.")}catch(err){toast(err.message,"err")}return}
-  if(e.target.id==="logoForm"||e.target.id==="faviconForm"){e.preventDefault();const file=new FormData(e.target).get("file");if(!file?.size)return toast("Pilih file terlebih dahulu.","err");try{const up=await A.upload("site-assets",file);const row={id:1};row[e.target.id==="logoForm"?"logo_path":"favicon_path"]=up.path;await A.upsert("site_settings",row);await afterSave("Asset brand berhasil diganti.")}catch(err){toast(err.message,"err")}return}
+  if(e.target.id==="clientForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),row={name:f.get("name"),brand:f.get("brand")||"",whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),email:f.get("email")||"",status:f.get("status"),notes:f.get("notes")||"",updated_at:new Date().toISOString()};if(id)row.id=id;try{await A.upsert("clients",row);await afterSave("Klien tersimpan.")}catch(err){if(err.status!==401)toast(err.message,"err")}return}
+  if(e.target.id==="projectForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),client=(state.data.clients||[]).find(c=>c.id===f.get("client_id"));if(!client)return toast("Pilih klien.","err");const progress=[];for(let i=0;i<12;i++){const label=f.get("progress_label_"+i);if(label)progress.push({label,done:f.get("progress_done_"+i)==="on"})}const row={id:id||undefined,order_code:f.get("order_code"),client_id:client.id,client:client.name,project:f.get("project"),service:f.get("service")||"",priority:f.get("priority"),order_date:f.get("order_date"),deadline:f.get("deadline")||null,status:f.get("status"),payment_status:f.get("payment_status"),amount:Number(f.get("amount")||0),paid_amount:Number(f.get("paid_amount")||0),revision_used:Number(f.get("revision_used")||0),revision_limit:Number(f.get("revision_limit")||0),brief_link:f.get("brief_link")||"",final_link:f.get("final_link")||"",notes:f.get("notes")||"",progress};try{await A.saveOrder(row);await afterSave("Project tersimpan.")}catch(err){if(err.status!==401)toast(err.message,"err")}return}
+  if(e.target.id==="portfolioForm"){
+    e.preventDefault();
+    const f=new FormData(e.target),id=f.get("id"),old=(state.data.portfolio||[]).find(x=>x.id===id)||{};
+    let image_path=old.image_path||null,image_url=old.image_url||null;
+    const file=f.get("image"),btn=e.target.querySelector(".btn-primary");
+    try{
+      if(!id&&(!file||!file.size))throw new Error("Pilih gambar portfolio terlebih dahulu.");
+      if(file&&file.size){
+        if(file.size>15*1024*1024)throw new Error("Ukuran gambar maksimal 15 MB.");
+        btn.disabled=true;btn.textContent="Mengunggah 0%";
+        const up=await A.upload("portfolio",file,p=>btn.textContent="Mengunggah "+p+"%");
+        image_path=up.path;image_url=null;
+      }
+      const category=f.get("category")||"digital";
+      const labels={digital:"Digital Design",brand:"Branding",print:"Print Design"};
+      const row={
+        title:f.get("title"),
+        category,
+        category_label:labels[category]||"Digital Design",
+        year:old.year||String(new Date().getFullYear()),
+        description:old.description||"",
+        image_alt:f.get("title"),
+        featured:true,
+        sort_order:Number(old.sort_order??((state.data.portfolio||[]).length+1)),
+        image_path,image_url
+      };
+      if(id)row.id=id;
+      await A.upsert("portfolio",row);
+      await afterSave("Portfolio tersimpan.");
+    }catch(err){if(err.status!==401)toast(err.message,"err")}
+    finally{btn.disabled=false;btn.textContent="Simpan"}
+    return;
+  }
+  if(e.target.id==="productForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),old=(state.data.products||[]).find(x=>x.id===id)||{},row={name:f.get("name"),category:f.get("category")||"",price:Number(f.get("price")||0),lynk_url:f.get("lynk_url")||state.data.site?.lynk||"https://lynk.id/midhostudio",description:f.get("description")||"",featured:f.get("featured")==="on",sort_order:Number(old.sort_order??((state.data.products||[]).length+1))};if(id)row.id=id;try{await A.upsert("products",row);await afterSave("Produk tersimpan.")}catch(err){if(err.status!==401)toast(err.message,"err")}return}
+  if(e.target.id==="priceForm"){e.preventDefault();const f=new FormData(e.target),row={id:f.get("id"),label:f.get("label")||"",name:f.get("name"),price_text:f.get("price_text")||"",featured:f.get("featured")==="on",features:String(f.get("features")||"").split("\n").map(x=>x.trim()).filter(Boolean)};try{await A.upsert("pricing",row);await afterSave("Paket harga diperbarui.")}catch(err){if(err.status!==401)toast(err.message,"err")}return}
+  if(e.target.id==="siteSettingsForm"){e.preventDefault();const f=new FormData(e.target),row={id:1,whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),lynk:f.get("lynk")||"https://lynk.id/midhostudio",email:f.get("email")||"",instagram:f.get("instagram")||"",location:f.get("location")||"",about:f.get("about")||""};try{await A.upsert("site_settings",row);await afterSave("Pengaturan website diperbarui.")}catch(err){if(err.status!==401)toast(err.message,"err")}return}
+  if(e.target.id==="logoForm"||e.target.id==="faviconForm"){e.preventDefault();const file=new FormData(e.target).get("file");if(!file?.size)return toast("Pilih file terlebih dahulu.","err");const btn=e.target.querySelector("button[type=submit]");try{btn.disabled=true;btn.textContent="Mengunggah...";const up=await A.upload("site-assets",file);const row={id:1};row[e.target.id==="logoForm"?"logo_path":"favicon_path"]=up.path;await A.upsert("site_settings",row);await afterSave("Asset brand berhasil diganti.")}catch(err){if(err.status!==401)toast(err.message,"err")}finally{btn.disabled=false;btn.textContent=e.target.id==="logoForm"?"Ganti Logo":"Ganti Favicon"}return}
 });
-$("#logoutBtn").addEventListener("click",()=>{A.logout();$("#adminView").hidden=true;$("#loginView").hidden=false});
+$("#logoutBtn").addEventListener("click",()=>{A.logout();closeModal();$("#adminView").hidden=true;$("#loginView").hidden=false});
 $("#adminMenu").addEventListener("click",()=>$("#adminRail").classList.toggle("open"));
 document.addEventListener("click",e=>{if(innerWidth<=900&&$("#adminRail").classList.contains("open")&&!e.target.closest("#adminRail")&&!e.target.closest("#adminMenu"))$("#adminRail").classList.remove("open")});
 window.MidhoAdminActions={clientModal,projectModal,portfolioModal,productModal,priceModal};
-window.MidhoAdminPages=P;
-if(A.hasToken())enter().catch(err=>{A.logout();toast("Sesi berakhir, masukkan PIN lagi.","err")});
+if(A.hasToken())enter().catch(err=>{
+  if(err.status===401){A.logout();toast("Sesi berakhir, masukkan PIN lagi.","err")}
+  else toast("Dashboard belum berhasil dimuat. Refresh halaman untuk mencoba lagi.","err");
+});
 })();

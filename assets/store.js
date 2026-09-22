@@ -9,7 +9,7 @@
       ...opts,
       headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json",...(opts.headers||{})}
     });
-    if(!res.ok)throw new Error(await res.text());
+    if(!res.ok){const err=new Error(await res.text()||"Request gagal");err.status=res.status;throw err}
     const text=await res.text(); return text?JSON.parse(text):null;
   }
   async function publicData(){
@@ -23,9 +23,15 @@
     return {site:site?.[0]||{},services:services||[],products:products||[],pricing:pricing||[],portfolio:portfolio||[]};
   }
   async function adminCall(payload,token=sessionStorage.getItem(TOKEN_KEY)||""){
-    const res=await fetch(ADMIN,{method:"POST",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:JSON.stringify(payload)});
+    let res;
+    try{
+      res=await fetch(ADMIN,{method:"POST",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:JSON.stringify(payload)});
+    }catch(e){
+      const err=new Error("Koneksi ke dashboard gagal. Periksa internet lalu coba lagi.");
+      err.status=0; throw err;
+    }
     const data=await res.json().catch(()=>({}));
-    if(!res.ok)throw new Error(data.error||"Request gagal");
+    if(!res.ok){const err=new Error(data.error||"Request gagal");err.status=res.status;throw err}
     return data;
   }
   async function login(pin){const r=await adminCall({action:"login",pin},"");sessionStorage.setItem(TOKEN_KEY,r.token);return r}
@@ -34,21 +40,25 @@
   async function remove(table,id){return adminCall({action:"delete",table,id})}
   async function saveOrder(order){return adminCall({action:"save_order",order})}
   async function upload(bucket,file,onProgress){
+    if(!file||!file.size)throw new Error("File tidak valid.");
     const signed=await adminCall({action:"create_upload",bucket,filename:file.name,contentType:file.type,size:file.size});
     await new Promise((resolve,reject)=>{
       const xhr=new XMLHttpRequest();
       xhr.open("PUT",signed.signedUrl,true);
+      if(file.type)xhr.setRequestHeader("Content-Type",file.type);
       xhr.setRequestHeader("x-upsert","false");
       xhr.upload.onprogress=e=>{if(e.lengthComputable&&typeof onProgress==="function")onProgress(Math.round(e.loaded/e.total*100))};
       xhr.onerror=()=>reject(new Error("Upload gagal. Periksa koneksi lalu coba lagi."));
+      xhr.onabort=()=>reject(new Error("Upload dibatalkan."));
       xhr.onload=()=>{
-        if(xhr.status>=200&&xhr.status<300)resolve();
-        else{let msg="Upload gagal";try{const j=JSON.parse(xhr.responseText);msg=j.message||j.error||msg}catch{}reject(new Error(msg+" ("+xhr.status+")"))}
+        if(xhr.status>=200&&xhr.status<300){if(typeof onProgress==="function")onProgress(100);resolve()}
+        else{
+          let msg="Upload gagal";
+          try{const j=JSON.parse(xhr.responseText);msg=j.message||j.error||msg}catch{}
+          reject(new Error(msg+" ("+xhr.status+")"));
+        }
       };
-      const form=new FormData();
-      form.append("cacheControl","3600");
-      form.append("",file);
-      xhr.send(form);
+      xhr.send(file);
     });
     return signed;
   }
