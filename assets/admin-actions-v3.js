@@ -1,6 +1,17 @@
 (()=>{
 const M=window.MidhoAdmin,{A,$,$$,esc,state,toast,fmtDateTime,activitiesFor,clientOf,modal,closeModal,reload,enter}=M;
 const P=window.MidhoAdminPages;
+function handleAdminError(err){
+  if(err?.auth===true){
+    A.logout();
+    closeModal();
+    $("#adminView").hidden=true;
+    $("#loginView").hidden=false;
+    toast("Sesi admin berakhir. Masukkan PIN lagi.","err");
+    return;
+  }
+  toast(err?.message||"Terjadi kesalahan. Coba lagi.","err");
+}
 function orderCode(){const d=new Date(),s=d.toISOString().slice(0,10).replace(/-/g,""),r=Math.random().toString(36).slice(2,6).toUpperCase();return "MDH-"+s+"-"+r}
 function field(label,input,full=false){return '<div class="field '+(full?"full":"")+'"><label>'+esc(label)+'</label>'+input+'</div>'}
 function modalForm(title,id,body,wide=false){modal(title,'<form id="'+id+'"><div class="modal-body">'+body+'</div><footer class="modal-foot"><button type="button" class="btn btn-outline" data-close-modal>Batal</button><button type="submit" class="btn btn-primary">Simpan</button></footer></form>',wide)}
@@ -93,7 +104,7 @@ function waProject(id){
 async function afterSave(msg){
   try{await reload();P.render();closeModal();toast(msg)}
   catch(err){
-    if(err.auth===true){A.logout();$("#adminView").hidden=true;$("#loginView").hidden=false;toast("Sesi admin berakhir. Masukkan PIN lagi.","err")}
+    if(err?.auth===true) handleAdminError(err);
     else toast("Data tersimpan, tetapi daftar belum termuat ulang. Coba buka menu ini lagi.","err");
     throw err;
   }
@@ -128,15 +139,15 @@ document.addEventListener("click",async e=>{
     ["[data-delete-portfolio]","portfolio","deletePortfolio","Hapus portfolio ini? File upload di Storage juga ikut dihapus."],
     ["[data-delete-product]","products","deleteProduct","Hapus produk ini?"]
   ];
-  for(const [sel,table,key,msg] of deletes){const el=e.target.closest(sel);if(el){if(confirm(msg)){try{await A.remove(table,el.dataset[key]);await afterSave("Data dihapus.")}catch(err){if(err.auth!==true)toast(err.message,"err")}}return}}
+  for(const [sel,table,key,msg] of deletes){const el=e.target.closest(sel);if(el){if(confirm(msg)){try{await A.remove(table,el.dataset[key]);await afterSave("Data dihapus.")}catch(err){handleAdminError(err)}}return}}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#modalRoot")?.children.length)closeModal()});
 document.addEventListener("input",e=>{if(e.target.id==="clientSearch")applyClientFilters();if(e.target.id==="projectSearch")applyProjectFilters()});
 document.addEventListener("change",e=>{if(e.target.id==="clientStatus")applyClientFilters();if(["projectStatus","paymentFilter"].includes(e.target.id))applyProjectFilters()});
 document.addEventListener("submit",async e=>{
   if(e.target.id==="pinForm"){e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;try{await A.login(new FormData(e.target).get("pin"));await enter()}catch(err){toast(err.message||"PIN salah","err")}finally{b.disabled=false}return}
-  if(e.target.id==="clientForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),row={name:f.get("name"),brand:f.get("brand")||"",whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),email:f.get("email")||"",status:f.get("status"),notes:f.get("notes")||"",updated_at:new Date().toISOString()};if(id)row.id=id;try{await A.upsert("clients",row);await afterSave("Klien tersimpan.")}catch(err){if(err.auth!==true)toast(err.message,"err")}return}
-  if(e.target.id==="projectForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),client=(state.data.clients||[]).find(c=>c.id===f.get("client_id"));if(!client)return toast("Pilih klien.","err");const progress=[];for(let i=0;i<12;i++){const label=f.get("progress_label_"+i);if(label)progress.push({label,done:f.get("progress_done_"+i)==="on"})}const row={id:id||undefined,order_code:f.get("order_code"),client_id:client.id,client:client.name,project:f.get("project"),service:f.get("service")||"",priority:f.get("priority"),order_date:f.get("order_date"),deadline:f.get("deadline")||null,status:f.get("status"),payment_status:f.get("payment_status"),amount:Number(f.get("amount")||0),paid_amount:Number(f.get("paid_amount")||0),revision_used:Number(f.get("revision_used")||0),revision_limit:Number(f.get("revision_limit")||0),brief_link:f.get("brief_link")||"",final_link:f.get("final_link")||"",notes:f.get("notes")||"",progress};try{await A.saveOrder(row);await afterSave("Project tersimpan.")}catch(err){if(err.auth!==true)toast(err.message,"err")}return}
+  if(e.target.id==="clientForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),row={name:f.get("name"),brand:f.get("brand")||"",whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),email:f.get("email")||"",status:f.get("status"),notes:f.get("notes")||"",updated_at:new Date().toISOString()};if(id)row.id=id;try{await A.upsert("clients",row);await afterSave("Klien tersimpan.")}catch(err){handleAdminError(err)}return}
+  if(e.target.id==="projectForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),client=(state.data.clients||[]).find(c=>c.id===f.get("client_id"));if(!client)return toast("Pilih klien.","err");const progress=[];for(let i=0;i<12;i++){const label=f.get("progress_label_"+i);if(label)progress.push({label,done:f.get("progress_done_"+i)==="on"})}const row={id:id||undefined,order_code:f.get("order_code"),client_id:client.id,client:client.name,project:f.get("project"),service:f.get("service")||"",priority:f.get("priority"),order_date:f.get("order_date"),deadline:f.get("deadline")||null,status:f.get("status"),payment_status:f.get("payment_status"),amount:Number(f.get("amount")||0),paid_amount:Number(f.get("paid_amount")||0),revision_used:Number(f.get("revision_used")||0),revision_limit:Number(f.get("revision_limit")||0),brief_link:f.get("brief_link")||"",final_link:f.get("final_link")||"",notes:f.get("notes")||"",progress};try{await A.saveOrder(row);await afterSave("Project tersimpan.")}catch(err){handleAdminError(err)}return}
   if(e.target.id==="portfolioForm"){
     e.preventDefault();
     const f=new FormData(e.target),id=f.get("id"),old=(state.data.portfolio||[]).find(x=>x.id===id)||{};
@@ -166,21 +177,21 @@ document.addEventListener("submit",async e=>{
       if(id)row.id=id;
       await A.upsert("portfolio",row);
       await afterSave("Portfolio tersimpan.");
-    }catch(err){if(err.auth!==true)toast(err.message,"err")}
+    }catch(err){handleAdminError(err)}
     finally{btn.disabled=false;btn.textContent="Simpan"}
     return;
   }
-  if(e.target.id==="productForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),old=(state.data.products||[]).find(x=>x.id===id)||{},row={name:f.get("name"),category:f.get("category")||"",price:Number(f.get("price")||0),lynk_url:f.get("lynk_url")||state.data.site?.lynk||"https://lynk.id/midhostudio",description:f.get("description")||"",featured:f.get("featured")==="on",sort_order:Number(old.sort_order??((state.data.products||[]).length+1))};if(id)row.id=id;try{await A.upsert("products",row);await afterSave("Produk tersimpan.")}catch(err){if(err.auth!==true)toast(err.message,"err")}return}
-  if(e.target.id==="priceForm"){e.preventDefault();const f=new FormData(e.target),row={id:f.get("id"),label:f.get("label")||"",name:f.get("name"),price_text:f.get("price_text")||"",featured:f.get("featured")==="on",features:String(f.get("features")||"").split("\n").map(x=>x.trim()).filter(Boolean)};try{await A.upsert("pricing",row);await afterSave("Paket harga diperbarui.")}catch(err){if(err.auth!==true)toast(err.message,"err")}return}
-  if(e.target.id==="siteSettingsForm"){e.preventDefault();const f=new FormData(e.target),row={id:1,whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),lynk:f.get("lynk")||"https://lynk.id/midhostudio",email:f.get("email")||"",instagram:f.get("instagram")||"",location:f.get("location")||"",about:f.get("about")||""};try{await A.upsert("site_settings",row);await afterSave("Pengaturan website diperbarui.")}catch(err){if(err.auth!==true)toast(err.message,"err")}return}
-  if(e.target.id==="logoForm"||e.target.id==="faviconForm"){e.preventDefault();const file=new FormData(e.target).get("file");if(!file?.size)return toast("Pilih file terlebih dahulu.","err");const btn=e.target.querySelector("button[type=submit]");try{btn.disabled=true;btn.textContent="Mengunggah...";const up=await A.upload("site-assets",file);const row={id:1};row[e.target.id==="logoForm"?"logo_path":"favicon_path"]=up.path;await A.upsert("site_settings",row);await afterSave("Asset brand berhasil diganti.")}catch(err){if(err.auth!==true)toast(err.message,"err")}finally{btn.disabled=false;btn.textContent=e.target.id==="logoForm"?"Ganti Logo":"Ganti Favicon"}return}
+  if(e.target.id==="productForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),old=(state.data.products||[]).find(x=>x.id===id)||{},row={name:f.get("name"),category:f.get("category")||"",price:Number(f.get("price")||0),lynk_url:f.get("lynk_url")||state.data.site?.lynk||"https://lynk.id/midhostudio",description:f.get("description")||"",featured:f.get("featured")==="on",sort_order:Number(old.sort_order??((state.data.products||[]).length+1))};if(id)row.id=id;try{await A.upsert("products",row);await afterSave("Produk tersimpan.")}catch(err){handleAdminError(err)}return}
+  if(e.target.id==="priceForm"){e.preventDefault();const f=new FormData(e.target),row={id:f.get("id"),label:f.get("label")||"",name:f.get("name"),price_text:f.get("price_text")||"",featured:f.get("featured")==="on",features:String(f.get("features")||"").split("\n").map(x=>x.trim()).filter(Boolean)};try{await A.upsert("pricing",row);await afterSave("Paket harga diperbarui.")}catch(err){handleAdminError(err)}return}
+  if(e.target.id==="siteSettingsForm"){e.preventDefault();const f=new FormData(e.target),row={id:1,whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),lynk:f.get("lynk")||"https://lynk.id/midhostudio",email:f.get("email")||"",instagram:f.get("instagram")||"",location:f.get("location")||"",about:f.get("about")||""};try{await A.upsert("site_settings",row);await afterSave("Pengaturan website diperbarui.")}catch(err){handleAdminError(err)}return}
+  if(e.target.id==="logoForm"||e.target.id==="faviconForm"){e.preventDefault();const file=new FormData(e.target).get("file");if(!file?.size)return toast("Pilih file terlebih dahulu.","err");const btn=e.target.querySelector("button[type=submit]");try{btn.disabled=true;btn.textContent="Mengunggah...";const up=await A.upload("site-assets",file);const row={id:1};row[e.target.id==="logoForm"?"logo_path":"favicon_path"]=up.path;await A.upsert("site_settings",row);await afterSave("Asset brand berhasil diganti.")}catch(err){handleAdminError(err)}finally{btn.disabled=false;btn.textContent=e.target.id==="logoForm"?"Ganti Logo":"Ganti Favicon"}return}
 });
 $("#logoutBtn").addEventListener("click",()=>{A.logout();closeModal();$("#adminView").hidden=true;$("#loginView").hidden=false});
 $("#adminMenu").addEventListener("click",()=>$("#adminRail").classList.toggle("open"));
 document.addEventListener("click",e=>{if(innerWidth<=900&&$("#adminRail").classList.contains("open")&&!e.target.closest("#adminRail")&&!e.target.closest("#adminMenu"))$("#adminRail").classList.remove("open")});
 window.MidhoAdminActions={clientModal,projectModal,portfolioModal,productModal,priceModal};
 if(A.hasToken())enter().catch(err=>{
-  if(err.auth===true){A.logout();toast("Sesi berakhir, masukkan PIN lagi.","err")}
+  if(err?.auth===true) handleAdminError(err);
   else toast("Dashboard belum berhasil dimuat. Refresh halaman untuk mencoba lagi.","err");
 });
 })();

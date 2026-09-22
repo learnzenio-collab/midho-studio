@@ -24,32 +24,13 @@ function renderPortfolio(data){
   if(first&&$("#heroWork1"))$("#heroWork1").src=pimg(first);
   if(second&&$("#heroWork2"))$("#heroWork2").src=pimg(second);
 }
-function renderProducts(data,site){
-  const box=$("#productGrid"),section=$("#produk"),navLink=document.querySelector('a[href="#produk"]');if(!box||!section)return;
-  const buy=site.lynk||"https://lynk.id/midhostudio";
-  const list=(data||[]).filter(x=>x.featured);
-  const priceNav=document.querySelector('a[href="#harga"] span');
-  const aboutNav=document.querySelector('a[href="#tentang"] span');
-  const priceLabel=document.querySelector('#harga .section-title>div>span');
-  const aboutLabel=document.querySelector('#tentang .section-title>div>span');
-  if(!list.length){
-    section.hidden=true;if(navLink)navLink.hidden=true;
-    if(priceNav)priceNav.textContent="03";if(aboutNav)aboutNav.textContent="04";
-    if(priceLabel)priceLabel.textContent="03 / HARGA";if(aboutLabel)aboutLabel.textContent="04 / TENTANG";
-    return;
-  }
-  section.hidden=false;if(navLink)navLink.hidden=false;
-  if(priceNav)priceNav.textContent="04";if(aboutNav)aboutNav.textContent="05";
-  if(priceLabel)priceLabel.textContent="04 / HARGA";if(aboutLabel)aboutLabel.textContent="05 / TENTANG";
-  box.innerHTML=list.map(x=>'<article class="product-card"><span class="product-type">'+esc(x.category||"Produk")+'</span><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||"")+'</p><footer><strong>'+(Number(x.price)>0?A.money(x.price):"Custom")+'</strong><a href="'+esc(x.lynk_url||buy)+'" target="_blank" rel="noopener">Beli / Detail ↗</a></footer></article>').join("");
-}
 function renderPricing(data,site){
   const box=$("#priceGrid");if(!box)return;
   const list=(data||[]).slice(0,3);
   box.innerHTML=list.map((p,i)=>'<article class="price-card '+(p.featured?"featured":"")+'"><span class="price-label">'+esc(p.label||"Paket")+'</span><h3>'+esc(p.name)+'</h3><div class="price">'+esc(p.price_text)+'</div><ul>'+((p.features||[]).map(f=>'<li>'+esc(f)+'</li>').join(""))+'</ul><a href="'+priceMessage(site,p)+'" target="_blank" rel="noopener">Pilih paket via WhatsApp ↗</a></article>').join("");
 }
 function setContact(site){
-  $("#aboutText").textContent=site.about||"Midho Studio menyediakan jasa desain feed sosial media yang rapi, konsisten, dan siap upload.";
+  $("#aboutText").textContent=site.about||"Midho Studio adalah jasa desain grafis yang fokus pada desain feed sosial media: rapi, konsisten, siap upload, dengan paket Basic, Standard, dan Premium.";
   const e=$("#publicEmail");e.textContent=site.email||"—";e.href=site.email?"mailto:"+site.email:"#";
   const ig=$("#publicInstagram");ig.textContent=site.instagram||"—";ig.href=site.instagram||"#";
   $("#publicLocation").textContent=site.location||"—";
@@ -69,14 +50,14 @@ function nav(){
   $$("[data-section-link]").forEach(a=>a.addEventListener("click",()=>rail.classList.remove("open")));
   document.addEventListener("click",e=>{if(innerWidth<=860&&rail.classList.contains("open")&&!e.target.closest("#siteRail")&&!e.target.closest("#mobileMenu"))rail.classList.remove("open")});
   const obs=new IntersectionObserver(entries=>entries.forEach(en=>{if(en.isIntersecting){$$("[data-section-link]").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+en.target.id))}}),{rootMargin:"-30% 0px -60% 0px"});
-  ["layanan","portfolio","produk","harga","tentang"].forEach(id=>{const el=$("#"+id);if(el)obs.observe(el)});
+  ["layanan","portfolio","harga","tentang"].forEach(id=>{const el=$("#"+id);if(el)obs.observe(el)});
 }
 async function init(){
   $("#year").textContent=new Date().getFullYear();
   nav();filters();
   try{
     const d=await A.publicData(),site=d.site||{};
-    bindWA(site);setContact(site);renderServices(d.services,site);renderPortfolio(d.portfolio);renderProducts(d.products,site);renderPricing(d.pricing,site);lightbox(d.portfolio);
+    bindWA(site);setContact(site);renderServices(d.services,site);renderPortfolio(d.portfolio);renderPricing(d.pricing,site);lightbox(d.portfolio);
   }catch(err){console.error(err);toast("Sebagian data belum berhasil dimuat.");bindWA({whatsapp:"6283133610239"});}
 }
 init();

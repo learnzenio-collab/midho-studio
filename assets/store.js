@@ -46,30 +46,33 @@
   async function saveOrder(order){return adminCall({action:"save_order",order})}
   async function upload(bucket,file,onProgress){
     if(!file||!file.size)throw new Error("File tidak valid.");
-    const signed=await adminCall({action:"create_upload",bucket,filename:file.name,contentType:file.type,size:file.size});
-    await new Promise((resolve,reject)=>{
+    const token=sessionStorage.getItem(TOKEN_KEY)||"";
+    if(!token){const err=new Error("Sesi admin berakhir. Silakan login kembali.");err.status=401;err.auth=true;throw err}
+    return await new Promise((resolve,reject)=>{
       const xhr=new XMLHttpRequest();
-      xhr.open("PUT",signed.signedUrl,true);
-      xhr.setRequestHeader("x-upsert","false");
+      xhr.open("POST",ADMIN,true);
+      xhr.setRequestHeader("Authorization","Bearer "+token);
       xhr.upload.onprogress=e=>{if(e.lengthComputable&&typeof onProgress==="function")onProgress(Math.round(e.loaded/e.total*100))};
       xhr.onerror=()=>{const err=new Error("Upload gagal. Periksa koneksi lalu coba lagi.");err.auth=false;reject(err)};
       xhr.onabort=()=>{const err=new Error("Upload dibatalkan.");err.auth=false;reject(err)};
       xhr.onload=()=>{
-        if(xhr.status>=200&&xhr.status<300){if(typeof onProgress==="function")onProgress(100);resolve()}
-        else{
-          let msg="Upload gagal";
-          try{const j=JSON.parse(xhr.responseText);msg=j.message||j.error||msg}catch{}
-          const err=new Error(msg+" ("+xhr.status+")");
-          err.status=xhr.status; err.auth=false;
+        let data={};
+        try{data=JSON.parse(xhr.responseText||"{}")}catch{}
+        if(xhr.status>=200&&xhr.status<300){
+          if(typeof onProgress==="function")onProgress(100);
+          resolve(data);
+        }else{
+          const err=new Error(data.error||"Upload gagal ("+xhr.status+")");
+          err.status=xhr.status;err.auth=xhr.status===401;
           reject(err);
         }
       };
       const form=new FormData();
-      form.append("cacheControl","3600");
-      form.append("",file);
+      form.append("action","upload_file");
+      form.append("bucket",bucket);
+      form.append("file",file,file.name);
       xhr.send(form);
     });
-    return signed;
   }
   async function deleteAsset(bucket,path){return adminCall({action:"delete_asset",bucket,path})}
   function logout(){sessionStorage.removeItem(TOKEN_KEY)}
