@@ -28,10 +28,15 @@
       res=await fetch(ADMIN,{method:"POST",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:JSON.stringify(payload)});
     }catch(e){
       const err=new Error("Koneksi ke dashboard gagal. Periksa internet lalu coba lagi.");
-      err.status=0; throw err;
+      err.status=0; err.auth=false; throw err;
     }
     const data=await res.json().catch(()=>({}));
-    if(!res.ok){const err=new Error(data.error||"Request gagal");err.status=res.status;throw err}
+    if(!res.ok){
+      const err=new Error(data.error||"Request gagal");
+      err.status=res.status;
+      err.auth=res.status===401;
+      throw err;
+    }
     return data;
   }
   async function login(pin){const r=await adminCall({action:"login",pin},"");sessionStorage.setItem(TOKEN_KEY,r.token);return r}
@@ -45,20 +50,24 @@
     await new Promise((resolve,reject)=>{
       const xhr=new XMLHttpRequest();
       xhr.open("PUT",signed.signedUrl,true);
-      if(file.type)xhr.setRequestHeader("Content-Type",file.type);
       xhr.setRequestHeader("x-upsert","false");
       xhr.upload.onprogress=e=>{if(e.lengthComputable&&typeof onProgress==="function")onProgress(Math.round(e.loaded/e.total*100))};
-      xhr.onerror=()=>reject(new Error("Upload gagal. Periksa koneksi lalu coba lagi."));
-      xhr.onabort=()=>reject(new Error("Upload dibatalkan."));
+      xhr.onerror=()=>{const err=new Error("Upload gagal. Periksa koneksi lalu coba lagi.");err.auth=false;reject(err)};
+      xhr.onabort=()=>{const err=new Error("Upload dibatalkan.");err.auth=false;reject(err)};
       xhr.onload=()=>{
         if(xhr.status>=200&&xhr.status<300){if(typeof onProgress==="function")onProgress(100);resolve()}
         else{
           let msg="Upload gagal";
           try{const j=JSON.parse(xhr.responseText);msg=j.message||j.error||msg}catch{}
-          reject(new Error(msg+" ("+xhr.status+")"));
+          const err=new Error(msg+" ("+xhr.status+")");
+          err.status=xhr.status; err.auth=false;
+          reject(err);
         }
       };
-      xhr.send(file);
+      const form=new FormData();
+      form.append("cacheControl","3600");
+      form.append("",file);
+      xhr.send(form);
     });
     return signed;
   }
