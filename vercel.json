@@ -41,6 +41,24 @@
           "value": "no-store, max-age=0"
         }
       ]
+    },
+    {
+      "source": "/assets/admin-v4.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/assets/studio-v4.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
     }
   ]
 }
