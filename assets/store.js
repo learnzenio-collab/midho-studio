@@ -43,14 +43,15 @@
   async function upsert(table,row){return adminCall({action:"upsert",table,row})}
   async function remove(table,id){return adminCall({action:"delete",table,id})}
   async function saveOrder(order){return adminCall({action:"save_order",order})}
+  async function createUploadTicket(bucket){
+    return adminCall({action:"create_upload_ticket",bucket});
+  }
   async function upload(bucket,file,onProgress){
     if(!file||!file.size)throw new Error("File tidak valid.");
-    const token=sessionStorage.getItem(TOKEN_KEY)||"";
-    if(!token){const err=new Error("Sesi admin berakhir. Silakan login kembali.");err.status=401;err.auth=true;throw err}
+    const ticketData=await createUploadTicket(bucket);
     return await new Promise((resolve,reject)=>{
       const xhr=new XMLHttpRequest();
       xhr.open("POST",ADMIN,true);
-      xhr.setRequestHeader("Authorization","Bearer "+token);
       xhr.upload.onprogress=e=>{if(e.lengthComputable&&typeof onProgress==="function")onProgress(Math.round(e.loaded/e.total*100))};
       xhr.onerror=()=>{const err=new Error("Upload gagal. Periksa koneksi lalu coba lagi.");err.auth=false;reject(err)};
       xhr.onabort=()=>{const err=new Error("Upload dibatalkan.");err.auth=false;reject(err)};
@@ -62,13 +63,46 @@
           resolve(data);
         }else{
           const err=new Error(data.error||"Upload gagal ("+xhr.status+")");
-          err.status=xhr.status;err.auth=xhr.status===401;
+          err.status=xhr.status;err.auth=false;
           reject(err);
         }
       };
       const form=new FormData();
       form.append("action","upload_file");
       form.append("bucket",bucket);
+      form.append("ticket",ticketData.ticket);
+      form.append("file",file,file.name);
+      xhr.send(form);
+    });
+  }
+  async function uploadPortfolio(file,meta,onProgress){
+    if(!file||!file.size)throw new Error("File portfolio tidak valid.");
+    const ticketData=await createUploadTicket("portfolio");
+    return await new Promise((resolve,reject)=>{
+      const xhr=new XMLHttpRequest();
+      xhr.open("POST",ADMIN,true);
+      xhr.upload.onprogress=e=>{if(e.lengthComputable&&typeof onProgress==="function")onProgress(Math.round(e.loaded/e.total*100))};
+      xhr.onerror=()=>{const err=new Error("Upload portfolio gagal. Periksa koneksi lalu coba lagi.");err.auth=false;reject(err)};
+      xhr.onabort=()=>{const err=new Error("Upload dibatalkan.");err.auth=false;reject(err)};
+      xhr.onload=()=>{
+        let data={};
+        try{data=JSON.parse(xhr.responseText||"{}")}catch{}
+        if(xhr.status>=200&&xhr.status<300){
+          if(typeof onProgress==="function")onProgress(100);
+          resolve(data);
+        }else{
+          const err=new Error(data.error||"Upload portfolio gagal ("+xhr.status+")");
+          err.status=xhr.status;err.auth=false;
+          reject(err);
+        }
+      };
+      const form=new FormData();
+      form.append("action","upload_portfolio");
+      form.append("bucket","portfolio");
+      form.append("ticket",ticketData.ticket);
+      form.append("title",meta?.title||"");
+      form.append("category",meta?.category||"digital");
+      if(meta?.id)form.append("id",meta.id);
       form.append("file",file,file.name);
       xhr.send(form);
     });
@@ -80,5 +114,5 @@
   function publicAsset(bucket,path){return path?URL+"/storage/v1/object/public/"+bucket+"/"+encodeURIComponent(path).replace(/%2F/g,"/"):""}
   function progress(order){const p=order.progress||[];return p.length?Math.round(p.filter(x=>x.done).length/p.length*100):0}
 
-  window.MidhoAPI={URL,KEY,ADMIN,TOKEN_KEY,publicData,adminCall,login,snapshot,upsert,remove,saveOrder,upload,deleteAsset,logout,hasToken,money,publicAsset,progress};
+  window.MidhoAPI={URL,KEY,ADMIN,TOKEN_KEY,publicData,adminCall,login,snapshot,upsert,remove,saveOrder,createUploadTicket,upload,uploadPortfolio,deleteAsset,logout,hasToken,money,publicAsset,progress};
 })();
