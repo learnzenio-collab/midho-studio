@@ -5,8 +5,41 @@
     {
       "source": "/(.*)",
       "headers": [
-        {"key":"X-Content-Type-Options","value":"nosniff"},
-        {"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"}
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/assets/store-v4.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/assets/admin-(.*)-v4.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
       ]
     }
   ]
