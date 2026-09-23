@@ -1,6 +1,6 @@
 (()=>{
 const M=window.MidhoAdmin,{A,$,$$,esc,state,initials,statusLabel,paymentLabel,fmtDate,deadlineInfo,clientOf,portfolioUrl,pageHead}=M;
-function currentTitle(){return({overview:"Overview",clients:"Klien",projects:"Project",portfolio:"Portfolio",products:"Produk",settings:"Pengaturan"})[state.section]||"Overview"}
+function currentTitle(){return({overview:"Overview",clients:"Klien",projects:"Project",portfolio:"Portfolio",settings:"Pengaturan"})[state.section]||"Overview"}
 function projectProgress(o){const p=o.progress||[];return p.length?Math.round(p.filter(x=>x.done).length/p.length*100):0}
 function render(){
   $$(".admin-rail [data-nav]").forEach(x=>x.classList.toggle("active",x.dataset.nav===state.section));
@@ -9,7 +9,6 @@ function render(){
   else if(state.section==="clients")clientsPage();
   else if(state.section==="projects")projectsPage();
   else if(state.section==="portfolio")portfolioPage();
-  else if(state.section==="products")productsPage();
   else settingsPage();
 }
 function overview(){
@@ -79,12 +78,6 @@ function portfolioPage(){
     pageHead("Website","Portfolio","Upload gambar HD, edit metadata, atau hapus karya.",'<button class="btn btn-primary" data-action="new-portfolio">+ Tambah Portfolio</button>')+
     '<div class="cards-grid">'+(list.map(x=>'<article class="manage-card"><img src="'+esc(portfolioUrl(x))+'" alt="'+esc(x.image_alt||x.title)+'"><div class="meta"><span>'+esc(x.category_label||x.category)+'</span><h3>'+esc(x.title)+'</h3><div class="actions"><button class="row-btn" data-edit-portfolio="'+x.id+'">Edit</button><button class="row-btn danger" data-delete-portfolio="'+x.id+'">Hapus</button></div></div></article>').join("")||'<div class="empty">Belum ada portfolio.</div>')+'</div>';
 }
-function productsPage(){
-  const list=state.data.products||[];
-  $("#mainContent").innerHTML=
-    pageHead("Penjualan","Produk Unggulan","Produk yang tampil di website dan terhubung ke Lynk.id.",'<button class="btn btn-primary" data-action="new-product">+ Tambah Produk</button>')+
-    '<div class="product-manage">'+(list.map(x=>'<article class="manage-card"><div class="meta"><span>'+esc(x.category||"Produk")+'</span><h3>'+esc(x.name)+'</h3></div><p>'+esc(x.description||"")+'</p><strong>'+A.money(x.price||0)+'</strong><small>'+esc(x.lynk_url||state.data.site?.lynk||"Belum ada link")+'</small><div class="actions"><button class="row-btn" data-edit-product="'+x.id+'">Edit</button><button class="row-btn danger" data-delete-product="'+x.id+'">Hapus</button></div></article>').join("")||'<div class="empty">Belum ada produk.</div>')+'</div>';
-}
 function settingsPage(){
   const s=state.data.site||{},prices=state.data.pricing||[];
   $("#mainContent").innerHTML=
@@ -97,5 +90,5 @@ function settingsPage(){
       '<form class="settings-card" id="faviconForm"><h3>Favicon</h3><div class="field"><label>Upload favicon</label><input type="file" name="file" accept="image/png,image/x-icon,image/vnd.microsoft.icon"><span class="upload-note">Gunakan logo Midho Studio versi icon.</span></div><div class="settings-actions"><button class="btn btn-outline">Ganti Favicon</button></div></form>'+
     '</div></div>';
 }
-window.MidhoAdminPages={render,overview,clientsPage,projectsPage,portfolioPage,productsPage,settingsPage,projectTable};
+window.MidhoAdminPages={render,overview,clientsPage,projectsPage,portfolioPage,settingsPage,projectTable};
 })();

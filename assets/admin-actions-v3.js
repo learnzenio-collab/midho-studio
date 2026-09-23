@@ -71,18 +71,6 @@ function portfolioModal(x={}){
     '</div>'
   );
 }
-function productModal(x={}){
-  modalForm(x.id?"Edit Produk":"Tambah Produk","productForm",
-    '<input type="hidden" name="id" value="'+esc(x.id||"")+'"><div class="form-grid">'+
-    field("Nama produk",'<input name="name" required value="'+esc(x.name||"")+'">')+
-    field("Kategori",'<input name="category" value="'+esc(x.category||"")+'">')+
-    field("Harga",'<input name="price" type="number" min="0" value="'+esc(x.price||0)+'">')+
-    field("Link Lynk.id",'<input name="lynk_url" value="'+esc(x.lynk_url||state.data.site?.lynk||"https://lynk.id/midhostudio")+'">')+
-    field("Deskripsi singkat",'<textarea name="description">'+esc(x.description||"")+'</textarea>',true)+
-    '<div class="field"><label><input type="checkbox" name="featured" '+(x.featured!==false?"checked":"")+'> Tampilkan di website</label></div>'+
-    '</div>'
-  );
-}
 function priceModal(x){
   modalForm("Edit Paket Harga","priceForm",
     '<input type="hidden" name="id" value="'+esc(x.id)+'"><div class="form-grid">'+
@@ -126,18 +114,15 @@ document.addEventListener("click",async e=>{
   if(act==="new-client")return clientModal();
   if(act==="new-project"){if(!(state.data.clients||[]).length){toast("Tambahkan klien terlebih dahulu.","err");state.section="clients";P.render();return}return projectModal()}
   if(act==="new-portfolio")return portfolioModal();
-  if(act==="new-product")return productModal();
   const ec=e.target.closest("[data-edit-client]");if(ec)return clientModal((state.data.clients||[]).find(x=>x.id===ec.dataset.editClient)||{});
   const ep=e.target.closest("[data-edit-project]");if(ep)return projectModal((state.data.orders||[]).find(x=>x.id===ep.dataset.editProject)||{});
   const ew=e.target.closest("[data-project-wa]");if(ew)return waProject(ew.dataset.projectWa);
   const ef=e.target.closest("[data-edit-portfolio]");if(ef)return portfolioModal((state.data.portfolio||[]).find(x=>x.id===ef.dataset.editPortfolio)||{});
-  const eu=e.target.closest("[data-edit-product]");if(eu)return productModal((state.data.products||[]).find(x=>x.id===eu.dataset.editProduct)||{});
   const eh=e.target.closest("[data-edit-price]");if(eh)return priceModal((state.data.pricing||[]).find(x=>x.id===eh.dataset.editPrice));
   const deletes=[
     ["[data-delete-client]","clients","deleteClient","Hapus klien ini? Project lama tetap tersimpan."],
     ["[data-delete-project]","orders","deleteProject","Hapus project dan seluruh progress/riwayatnya?"],
     ["[data-delete-portfolio]","portfolio","deletePortfolio","Hapus portfolio ini? File upload di Storage juga ikut dihapus."],
-    ["[data-delete-product]","products","deleteProduct","Hapus produk ini?"]
   ];
   for(const [sel,table,key,msg] of deletes){const el=e.target.closest(sel);if(el){if(confirm(msg)){try{await A.remove(table,el.dataset[key]);await afterSave("Data dihapus.")}catch(err){handleAdminError(err)}}return}}
 });
@@ -151,37 +136,34 @@ document.addEventListener("submit",async e=>{
   if(e.target.id==="portfolioForm"){
     e.preventDefault();
     const f=new FormData(e.target),id=f.get("id"),old=(state.data.portfolio||[]).find(x=>x.id===id)||{};
-    let image_path=old.image_path||null,image_url=old.image_url||null;
     const file=f.get("image"),btn=e.target.querySelector(".btn-primary");
+    const title=String(f.get("title")||"").trim();
+    const category=f.get("category")||"digital";
     try{
+      if(!title)throw new Error("Judul portfolio wajib diisi.");
       if(!id&&(!file||!file.size))throw new Error("Pilih gambar portfolio terlebih dahulu.");
+      btn.disabled=true;
       if(file&&file.size){
         if(file.size>15*1024*1024)throw new Error("Ukuran gambar maksimal 15 MB.");
-        btn.disabled=true;btn.textContent="Mengunggah 0%";
-        const up=await A.upload("portfolio",file,p=>btn.textContent="Mengunggah "+p+"%");
-        image_path=up.path;image_url=null;
+        btn.textContent="Mengunggah 0%";
+        await A.uploadPortfolio(file,{id:id||"",title,category},p=>btn.textContent="Mengunggah "+p+"%");
+      }else{
+        btn.textContent="Menyimpan...";
+        const labels={digital:"Digital Design",brand:"Branding",print:"Print Design"};
+        await A.upsert("portfolio",{
+          id,
+          title,
+          category,
+          category_label:labels[category]||"Digital Design",
+          image_alt:title,
+          updated_at:new Date().toISOString()
+        });
       }
-      const category=f.get("category")||"digital";
-      const labels={digital:"Digital Design",brand:"Branding",print:"Print Design"};
-      const row={
-        title:f.get("title"),
-        category,
-        category_label:labels[category]||"Digital Design",
-        year:old.year||String(new Date().getFullYear()),
-        description:old.description||"",
-        image_alt:f.get("title"),
-        featured:true,
-        sort_order:Number(old.sort_order??((state.data.portfolio||[]).length+1)),
-        image_path,image_url
-      };
-      if(id)row.id=id;
-      await A.upsert("portfolio",row);
       await afterSave("Portfolio tersimpan.");
     }catch(err){handleAdminError(err)}
     finally{btn.disabled=false;btn.textContent="Simpan"}
     return;
   }
-  if(e.target.id==="productForm"){e.preventDefault();const f=new FormData(e.target),id=f.get("id"),old=(state.data.products||[]).find(x=>x.id===id)||{},row={name:f.get("name"),category:f.get("category")||"",price:Number(f.get("price")||0),lynk_url:f.get("lynk_url")||state.data.site?.lynk||"https://lynk.id/midhostudio",description:f.get("description")||"",featured:f.get("featured")==="on",sort_order:Number(old.sort_order??((state.data.products||[]).length+1))};if(id)row.id=id;try{await A.upsert("products",row);await afterSave("Produk tersimpan.")}catch(err){handleAdminError(err)}return}
   if(e.target.id==="priceForm"){e.preventDefault();const f=new FormData(e.target),row={id:f.get("id"),label:f.get("label")||"",name:f.get("name"),price_text:f.get("price_text")||"",featured:f.get("featured")==="on",features:String(f.get("features")||"").split("\n").map(x=>x.trim()).filter(Boolean)};try{await A.upsert("pricing",row);await afterSave("Paket harga diperbarui.")}catch(err){handleAdminError(err)}return}
   if(e.target.id==="siteSettingsForm"){e.preventDefault();const f=new FormData(e.target),row={id:1,whatsapp:String(f.get("whatsapp")||"").replace(/\s/g,""),lynk:f.get("lynk")||"https://lynk.id/midhostudio",email:f.get("email")||"",instagram:f.get("instagram")||"",location:f.get("location")||"",about:f.get("about")||""};try{await A.upsert("site_settings",row);await afterSave("Pengaturan website diperbarui.")}catch(err){handleAdminError(err)}return}
   if(e.target.id==="logoForm"||e.target.id==="faviconForm"){e.preventDefault();const file=new FormData(e.target).get("file");if(!file?.size)return toast("Pilih file terlebih dahulu.","err");const btn=e.target.querySelector("button[type=submit]");try{btn.disabled=true;btn.textContent="Mengunggah...";const up=await A.upload("site-assets",file);const row={id:1};row[e.target.id==="logoForm"?"logo_path":"favicon_path"]=up.path;await A.upsert("site_settings",row);await afterSave("Asset brand berhasil diganti.")}catch(err){handleAdminError(err)}finally{btn.disabled=false;btn.textContent=e.target.id==="logoForm"?"Ganti Logo":"Ganti Favicon"}return}
@@ -189,7 +171,7 @@ document.addEventListener("submit",async e=>{
 $("#logoutBtn").addEventListener("click",()=>{A.logout();closeModal();$("#adminView").hidden=true;$("#loginView").hidden=false});
 $("#adminMenu").addEventListener("click",()=>$("#adminRail").classList.toggle("open"));
 document.addEventListener("click",e=>{if(innerWidth<=900&&$("#adminRail").classList.contains("open")&&!e.target.closest("#adminRail")&&!e.target.closest("#adminMenu"))$("#adminRail").classList.remove("open")});
-window.MidhoAdminActions={clientModal,projectModal,portfolioModal,productModal,priceModal};
+window.MidhoAdminActions={clientModal,projectModal,portfolioModal,priceModal};
 if(A.hasToken())enter().catch(err=>{
   if(err?.auth===true) handleAdminError(err);
   else toast("Dashboard belum berhasil dimuat. Refresh halaman untuk mencoba lagi.","err");

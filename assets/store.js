@@ -13,14 +13,13 @@
     const text=await res.text(); return text?JSON.parse(text):null;
   }
   async function publicData(){
-    const [site,services,products,pricing,portfolio]=await Promise.all([
+    const [site,services,pricing,portfolio]=await Promise.all([
       request("site_settings?id=eq.1&select=*"),
       request("services?select=*&order=sort_order.asc"),
-      request("products?select=*&order=sort_order.asc"),
       request("pricing?select=*&order=sort_order.asc"),
       request("portfolio?select=*&order=sort_order.asc")
     ]);
-    return {site:site?.[0]||{},services:services||[],products:products||[],pricing:pricing||[],portfolio:portfolio||[]};
+    return {site:site?.[0]||{},services:services||[],pricing:pricing||[],portfolio:portfolio||[]};
   }
   async function adminCall(payload,token=sessionStorage.getItem(TOKEN_KEY)||""){
     let res;
